@@ -1,6 +1,7 @@
 import os
 
 TODO_FILE = 'todo.txt'
+UNDO_FILE = 'undo.txt'
 
 def load_tasks():
     if not os.path.exists(TODO_FILE):
@@ -9,10 +10,23 @@ def load_tasks():
         tasks = [line.strip() for line in file]
     return tasks
 
-def save_tasks(tasks):
+def save_tasks(tasks, undo=False):
+    if not undo:
+        with open(UNDO_FILE, 'w') as undo_file:
+            for task in tasks:
+                undo_file.write(f"{task}\n")
     with open(TODO_FILE, 'w') as file:
         for task in tasks:
             file.write(f"{task}\n")
+
+def undo_last_action():
+    if os.path.exists(UNDO_FILE):
+        with open(UNDO_FILE, 'r') as undo_file:
+            tasks = [line.strip() for line in undo_file]
+        save_tasks(tasks, undo=True)
+        print("Last action has been undone.")
+    else:
+        print("No action to undo.")
 
 def add_task(task):
     tasks = load_tasks()
@@ -54,6 +68,35 @@ def clear_tasks():
     save_tasks([])
     print("All tasks have been cleared.")
 
+def edit_task(task_number, new_task):
+    tasks = load_tasks()
+    if 0 < task_number <= len(tasks):
+        tasks[task_number - 1] = f"[ ] {new_task}"
+        save_tasks(tasks)
+        print(f"Task {task_number} has been updated.")
+    else:
+        print("Invalid task number.")
+
+def search_task(keyword):
+    tasks = load_tasks()
+    found_tasks = [task for task in tasks if keyword.lower() in task.lower()]
+    if found_tasks:
+        for i, task in enumerate(found_tasks, 1):
+            print(f"{i}. {task}")
+    else:
+        print("No tasks found containing the keyword.")
+
+def prioritize_task(task_number, priority):
+    priority_map = {"high": "!!!", "medium": "!!", "low": "!"}
+    tasks = load_tasks()
+    if 0 < task_number <= len(tasks):
+        task = tasks[task_number - 1]
+        tasks[task_number - 1] = f"{priority_map[priority]} {task}"
+        save_tasks(tasks)
+        print(f"Task {task_number} has been prioritized as {priority}.")
+    else:
+        print("Invalid task number.")
+
 def show_menu():
     print("\nCommand-Line To-Do List")
     print("----------------------")
@@ -62,7 +105,11 @@ def show_menu():
     print("3. Mark task as complete")
     print("4. Delete task")
     print("5. Clear all tasks")
-    print("6. Exit")
+    print("6. Edit task")
+    print("7. Search tasks")
+    print("8. Prioritize task")
+    print("9. Undo last action")
+    print("10. Exit")
 
 def main():
     while True:
@@ -92,6 +139,28 @@ def main():
             else:
                 print("Clear all tasks canceled.")
         elif choice == '6':
+            try:
+                task_number = int(input("Enter the task number to edit: ").strip())
+                new_task = input("Enter the new task description: ").strip()
+                edit_task(task_number, new_task)
+            except ValueError:
+                print("Please enter a valid task number.")
+        elif choice == '7':
+            keyword = input("Enter the keyword to search for: ").strip()
+            search_task(keyword)
+        elif choice == '8':
+            try:
+                task_number = int(input("Enter the task number to prioritize: ").strip())
+                priority = input("Enter the priority (high, medium, low): ").strip().lower()
+                if priority in ["high", "medium", "low"]:
+                    prioritize_task(task_number, priority)
+                else:
+                    print("Invalid priority. Please choose from high, medium, or low.")
+            except ValueError:
+                print("Please enter a valid task number.")
+        elif choice == '9':
+            undo_last_action()
+        elif choice == '10':
             print("Goodbye!")
             break
         else:
