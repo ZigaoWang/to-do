@@ -32,15 +32,17 @@ def add_task(task):
     tasks = load_tasks()
     tasks.append(f"[ ] {task}")
     save_tasks(tasks)
-    print(f"Added task: {task}")
+    print(f"Added task: '{task}'")
 
 def view_tasks():
     tasks = load_tasks()
     if not tasks:
         print("No tasks found.")
         return
+    print("\nYour To-Do List:")
     for i, task in enumerate(tasks, 1):
         print(f"{i}. {task}")
+    print()
 
 def complete_task(task_number):
     tasks = load_tasks()
@@ -49,7 +51,7 @@ def complete_task(task_number):
         if task.startswith("[ ]"):
             tasks[task_number - 1] = task.replace("[ ]", "[x]", 1)
             save_tasks(tasks)
-            print(f"Marked task {task_number} as complete.")
+            print(f"Task {task_number} marked as complete.")
         else:
             print(f"Task {task_number} is already completed.")
     else:
@@ -60,7 +62,7 @@ def delete_task(task_number):
     if 0 < task_number <= len(tasks):
         removed_task = tasks.pop(task_number - 1)
         save_tasks(tasks)
-        print(f"Deleted task: {removed_task}")
+        print(f"Deleted task: '{removed_task}'")
     else:
         print("Invalid task number.")
 
@@ -73,7 +75,7 @@ def edit_task(task_number, new_task):
     if 0 < task_number <= len(tasks):
         tasks[task_number - 1] = f"[ ] {new_task}"
         save_tasks(tasks)
-        print(f"Task {task_number} has been updated.")
+        print(f"Task {task_number} has been updated to: '{new_task}'")
     else:
         print("Invalid task number.")
 
@@ -81,10 +83,11 @@ def search_task(keyword):
     tasks = load_tasks()
     found_tasks = [task for task in tasks if keyword.lower() in task.lower()]
     if found_tasks:
+        print(f"\nTasks containing '{keyword}':")
         for i, task in enumerate(found_tasks, 1):
             print(f"{i}. {task}")
     else:
-        print("No tasks found containing the keyword.")
+        print(f"No tasks found containing '{keyword}'.")
 
 def prioritize_task(task_number, priority):
     priority_map = {"high": "!!!", "medium": "!!", "low": "!"}
@@ -110,12 +113,12 @@ def show_menu():
 def main():
     while True:
         show_menu()
-        choice = input("Choose an option: ").strip()
+        choice = input("Choose an option (1-10): ").strip()
         print("----------------------")  # Divider for better readability
         if choice == '1':
             view_tasks()
         elif choice == '2':
-            task = input("Enter the task: ").strip()
+            task = input("Enter the task description: ").strip()
             add_task(task)
         elif choice == '3':
             try:
