@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 from colorama import init, Fore, Style
 
 # Initialize colorama
@@ -25,9 +26,10 @@ def save_tasks(tasks):
         for task in tasks:
             file.write(f"{task}\n")
 
-def add_task(task):
+def add_task(task, due_date=None):
     tasks = load_tasks()
-    tasks.append(f"[ ] {PRIORITY_MAP['medium']} {task}")
+    due_date_str = f" (Due: {due_date})" if due_date else ""
+    tasks.append(f"[ ] {PRIORITY_MAP['medium']} {task}{due_date_str}")
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + f"Added task: '{task}'"
 
@@ -70,8 +72,8 @@ def clear_tasks():
 def edit_task(task_number, new_task):
     tasks = load_tasks()
     if 0 < task_number <= len(tasks):
-        priority = re.search(r'\[.\] (.)', tasks[task_number - 1]).group(1)
-        tasks[task_number - 1] = f"[ ] {priority} {new_task}"
+        parts = re.split(r'(\[.\]) (.)', tasks[task_number - 1], 1)
+        tasks[task_number - 1] = f"{parts[1]} {parts[2]} {new_task}"
         save_tasks(tasks)
         return Fore.GREEN + Style.BRIGHT + f"Task {task_number} has been updated to: '{new_task}'"
     else:
@@ -83,7 +85,8 @@ def search_task(keyword):
     if found_tasks:
         output = [Fore.GREEN + Style.BRIGHT + f"\nTasks containing '{keyword}':"]
         for i, task in enumerate(found_tasks, 1):
-            output.append(f"{i}. {task}")
+            highlighted_task = re.sub(f"({keyword})", Fore.YELLOW + r"\1" + Fore.GREEN, task, flags=re.IGNORECASE)
+            output.append(f"{i}. {highlighted_task}")
         return "\n".join(output)
     else:
         return Fore.RED + Style.BRIGHT + f"No tasks found containing '{keyword}'."
@@ -92,18 +95,25 @@ def prioritize_task(task_number, priority):
     tasks = load_tasks()
     if 0 < task_number <= len(tasks):
         task = tasks[task_number - 1]
-        parts = re.split(r'(\[.\]) (.)', task, 1)  # Split into three parts: [status, current_priority, rest_of_task]
+        parts = re.split(r'(\[.\]) (.)', task, 1)
         tasks[task_number - 1] = f"{parts[1]} {PRIORITY_MAP[priority]} {parts[3].strip()}"
         save_tasks(tasks)
         return Fore.GREEN + Style.BRIGHT + f"Task {task_number} has been prioritized as {priority}."
     else:
         return Fore.RED + Style.BRIGHT + "Invalid task number."
 
+def sort_tasks_by_due_date():
+    tasks = load_tasks()
+    tasks.sort(key=lambda x: re.search(r'\(Due: (.*?)\)', x).group(1) if re.search(r'\(Due: (.*?)\)', x) else "")
+    save_tasks(tasks)
+    return Fore.GREEN + Style.BRIGHT + "Tasks have been sorted by due date."
+
 def show_menu():
-    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          5.  🗑️  Clear all tasks")
-    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    6.  🔍 Search task")
-    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        7.  ⭐ Prioritize task")
-    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       8.  🚪 Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          6.  🔍 Search task")
+    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    7.  ⭐ Prioritize task")
+    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        8.  📅 Sort by due date")
+    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       9.  🚪 Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks")
     print("--------------------------------------------------")
 
 def main():
@@ -131,11 +141,18 @@ def main():
         if last_message:
             print(last_message)
             last_message = ""
-        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-8): ").strip()
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-9): ").strip()
         print("--------------------------------------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
-            last_message = add_task(task)
+            due_date = input(Fore.MAGENTA + Style.BRIGHT + "Enter the due date (YYYY-MM-DD) or leave blank: ").strip()
+            if due_date:
+                try:
+                    datetime.strptime(due_date, "%Y-%m-%d")
+                except ValueError:
+                    last_message = Fore.RED + Style.BRIGHT + "Invalid date format. Task not added."
+                    continue
+            last_message = add_task(task, due_date)
         elif choice == '2':
             try:
                 task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to mark as complete: ").strip())
@@ -175,6 +192,8 @@ def main():
             except ValueError:
                 last_message = Fore.RED + Style.BRIGHT + "Please enter a valid task number."
         elif choice == '8':
+            last_message = sort_tasks_by_due_date()
+        elif choice == '9':
             print(Fore.MAGENTA + Style.BRIGHT + "Goodbye!")
             break
         else:
