@@ -105,11 +105,13 @@ def show_menu():
     print("3.  Mark task complete  8.  Prioritize task")
     print("4.  Delete task         9.  Undo last action")
     print("5.  Clear all tasks     10. Exit")
+    print("----------------------")
 
 def main():
     while True:
         show_menu()
         choice = input("Choose an option: ").strip()
+        print("----------------------")  # Divider for better readability
         if choice == '1':
             view_tasks()
         elif choice == '2':
@@ -160,6 +162,7 @@ def main():
             break
         else:
             print("Invalid choice. Please choose a valid option.")
+        print("----------------------")  # Divider for better readability
 
 if __name__ == "__main__":
     main()
