@@ -93,14 +93,10 @@ def prioritize_task(task_number, priority):
 def show_menu():
     print(Fore.MAGENTA + Style.BRIGHT + "\nCommand-Line To-Do List")
     print("----------------------")
-    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task")
-    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task")
-    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task")
-    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task")
-    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks")
-    print(Fore.YELLOW + Style.BRIGHT + "6.  🔍 Search task")
-    print(Fore.YELLOW + Style.BRIGHT + "7.  ⭐ Prioritize task")
-    print(Fore.YELLOW + Style.BRIGHT + "8.  🚪 Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          5.  🗑️  Clear all tasks")
+    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    6.  🔍 Search task")
+    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        7.  ⭐ Prioritize task")
+    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       8.  🚪 Exit")
     print("----------------------")
 
 def main():
