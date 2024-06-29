@@ -91,18 +91,6 @@ def prioritize_task(task_number, priority):
         print(Fore.RED + Style.BRIGHT + "Invalid task number.")
 
 def show_menu():
-    print(Fore.MAGENTA + Style.BRIGHT + r"""
-   ___   __   _____   _____              ___          __ _     _   
-  / __\ / /   \_   \ /__   \___         /   \___     / /(_)___| |_ 
- / /   / /     / /\/   / /\/ _ \ _____ / /\ / _ \   / / | / __| __|
-/ /___/ /___/\/ /_    / / | (_) |_____/ /_// (_) | / /__| \__ \ |_ 
-\____/\____/\____/    \/   \___/     /___,' \___/  \____/_|___/\__|
-    """)
-    print("Command Line Interface To-Do List")
-    print("Made by 💜 from Zigao Wang.")
-    print("This project is licensed under MIT License.")
-    print("GitHub Repo: https://github.com/ZigaoWang/to-do/")
-    print("--------------------------------------------------")
     print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          5.  🗑️  Clear all tasks")
     print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    6.  🔍 Search task")
     print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        7.  ⭐ Prioritize task")
@@ -110,7 +98,22 @@ def show_menu():
     print("--------------------------------------------------")
 
 def main():
+    first_run = True
     while True:
+        if first_run:
+            print(Fore.MAGENTA + Style.BRIGHT + r"""
+   ___   __   _____   _____              ___          __ _     _   
+  / __\ / /   \_   \ /__   \___         /   \___     / /(_)___| |_ 
+ / /   / /     / /\/   / /\/ _ \ _____ / /\ / _ \   / / | / __| __|
+/ /___/ /___/\/ /_    / / | (_) |_____/ /_// (_) | / /__| \__ \ |_ 
+\____/\____/\____/    \/   \___/     /___,' \___/  \____/_|___/\__/ 
+    """)
+            print("Command Line Interface To-Do List")
+            print("Made by 💜 from Zigao Wang.")
+            print("This project is licensed under MIT License.")
+            print("GitHub Repo: https://github.com/ZigaoWang/to-do/")
+            print("--------------------------------------------------")
+            first_run = False
         show_menu()
         view_tasks()  # Automatically display the to-do list each time
         choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-8): ").strip()
