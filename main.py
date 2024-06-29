@@ -100,16 +100,11 @@ def prioritize_task(task_number, priority):
 def show_menu():
     print("\nCommand-Line To-Do List")
     print("----------------------")
-    print("1. View tasks")
-    print("2. Add task")
-    print("3. Mark task as complete")
-    print("4. Delete task")
-    print("5. Clear all tasks")
-    print("6. Edit task")
-    print("7. Search tasks")
-    print("8. Prioritize task")
-    print("9. Undo last action")
-    print("10. Exit")
+    print("1.  View tasks          6.  Edit task")
+    print("2.  Add task            7.  Search tasks")
+    print("3.  Mark task complete  8.  Prioritize task")
+    print("4.  Delete task         9.  Undo last action")
+    print("5.  Clear all tasks     10. Exit")
 
 def main():
     while True:
