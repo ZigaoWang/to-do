@@ -92,19 +92,19 @@ def prioritize_task(task_number, priority):
 
 def show_menu():
     print(Fore.MAGENTA + Style.BRIGHT + "\nCommand-Line To-Do List")
-    print("----------------------")
+    print("--------------------------------------------------")
     print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          5.  🗑️  Clear all tasks")
     print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    6.  🔍 Search task")
     print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        7.  ⭐ Prioritize task")
     print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       8.  🚪 Exit")
-    print("----------------------")
+    print("--------------------------------------------------")
 
 def main():
     while True:
-        view_tasks()  # Automatically display the to-do list each time
         show_menu()
+        view_tasks()  # Automatically display the to-do list each time
         choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-8): ").strip()
-        print("----------------------")  # Divider for better readability
+        print("--------------------------------------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
             add_task(task)
@@ -151,7 +151,7 @@ def main():
             break
         else:
             print(Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option.")
-        print("----------------------")  # Divider for better readability
+        print("--------------------------------------------------")  # Divider for better readability
 
 if __name__ == "__main__":
     main()
