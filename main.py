@@ -1,5 +1,5 @@
 import os
-from colorama import init, Fore, Back, Style
+from colorama import init, Fore, Style
 
 # Initialize colorama
 init(autoreset=True)
@@ -43,7 +43,7 @@ def view_tasks():
     if not tasks:
         print(Fore.RED + Style.BRIGHT + "No tasks found.")
         return
-    print(Fore.CYAN + Style.BRIGHT + "\nYour To-Do List:")
+    print(Fore.MAGENTA + Style.BRIGHT + "\nYour To-Do List:")
     for i, task in enumerate(tasks, 1):
         print(f"{i}. {task}")
     print()
@@ -87,7 +87,7 @@ def search_task(keyword):
     tasks = load_tasks()
     found_tasks = [task for task in tasks if keyword.lower() in task.lower()]
     if found_tasks:
-        print(Fore.CYAN + Style.BRIGHT + f"\nTasks containing '{keyword}':")
+        print(Fore.MAGENTA + Style.BRIGHT + f"\nTasks containing '{keyword}':")
         for i, task in enumerate(found_tasks, 1):
             print(f"{i}. {task}")
     else:
@@ -105,74 +105,70 @@ def prioritize_task(task_number, priority):
         print(Fore.RED + Style.BRIGHT + "Invalid task number.")
 
 def show_menu():
-    print(Fore.CYAN + Style.BRIGHT + "\nCommand-Line To-Do List")
+    print(Fore.MAGENTA + Style.BRIGHT + "\nCommand-Line To-Do List")
     print("----------------------")
-    print(Fore.YELLOW + Style.BRIGHT + "1.  Add/Complete/Edit/Delete task")
-    print(Fore.YELLOW + Style.BRIGHT + "2.  Clear all tasks")
-    print(Fore.YELLOW + Style.BRIGHT + "3.  Search/Prioritize task")
-    print(Fore.YELLOW + Style.BRIGHT + "4.  Undo last action")
-    print(Fore.YELLOW + Style.BRIGHT + "5.  Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task")
+    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task")
+    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task")
+    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task")
+    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks")
+    print(Fore.YELLOW + Style.BRIGHT + "6.  🔍 Search task")
+    print(Fore.YELLOW + Style.BRIGHT + "7.  ⭐ Prioritize task")
+    print(Fore.YELLOW + Style.BRIGHT + "8.  🔄 Undo last action")
+    print(Fore.YELLOW + Style.BRIGHT + "9.  🚪 Exit")
     print("----------------------")
 
 def main():
     while True:
         view_tasks()  # Automatically display the to-do list each time
         show_menu()
-        choice = input(Fore.CYAN + Style.BRIGHT + "Choose an option (1-5): ").strip()
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-9): ").strip()
         print("----------------------")  # Divider for better readability
         if choice == '1':
-            sub_choice = input(Fore.CYAN + Style.BRIGHT + "Choose: (a) Add (b) Complete (c) Edit (d) Delete: ").strip().lower()
-            if sub_choice == 'a':
-                task = input(Fore.CYAN + Style.BRIGHT + "Enter the task description: ").strip()
-                add_task(task)
-            elif sub_choice == 'b':
-                try:
-                    task_number = int(input(Fore.CYAN + Style.BRIGHT + "Enter the task number to mark as complete: ").strip())
-                    complete_task(task_number)
-                except ValueError:
-                    print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
-            elif sub_choice == 'c':
-                try:
-                    task_number = int(input(Fore.CYAN + Style.BRIGHT + "Enter the task number to edit: ").strip())
-                    new_task = input(Fore.CYAN + Style.BRIGHT + "Enter the new task description: ").strip()
-                    edit_task(task_number, new_task)
-                except ValueError:
-                    print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
-            elif sub_choice == 'd':
-                try:
-                    task_number = int(input(Fore.CYAN + Style.BRIGHT + "Enter the task number to delete: ").strip())
-                    delete_task(task_number)
-                except ValueError:
-                    print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
-            else:
-                print(Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option.")
+            task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
+            add_task(task)
         elif choice == '2':
-            confirm = input(Fore.CYAN + Style.BRIGHT + "Are you sure you want to clear all tasks? (yes/no): ").strip().lower()
+            try:
+                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to mark as complete: ").strip())
+                complete_task(task_number)
+            except ValueError:
+                print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
+        elif choice == '3':
+            try:
+                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to edit: ").strip())
+                new_task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the new task description: ").strip()
+                edit_task(task_number, new_task)
+            except ValueError:
+                print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
+        elif choice == '4':
+            try:
+                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to delete: ").strip())
+                delete_task(task_number)
+            except ValueError:
+                print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
+        elif choice == '5':
+            confirm = input(Fore.MAGENTA + Style.BRIGHT + "Are you sure you want to clear all tasks? (yes/no): ").strip().lower()
             if confirm == 'yes':
                 clear_tasks()
             else:
                 print(Fore.YELLOW + Style.BRIGHT + "Clear all tasks canceled.")
-        elif choice == '3':
-            sub_choice = input(Fore.CYAN + Style.BRIGHT + "Choose: (a) Search (b) Prioritize: ").strip().lower()
-            if sub_choice == 'a':
-                keyword = input(Fore.CYAN + Style.BRIGHT + "Enter the keyword to search for: ").strip()
-                search_task(keyword)
-            elif sub_choice == 'b':
-                try:
-                    task_number = int(input(Fore.CYAN + Style.BRIGHT + "Enter the task number to prioritize: ").strip())
-                    priority = input(Fore.CYAN + Style.BRIGHT + "Enter the priority (high, medium, low): ").strip().lower()
-                    if priority in ["high", "medium", "low"]:
-                        prioritize_task(task_number, priority)
-                    else:
-                        print(Fore.RED + Style.BRIGHT + "Invalid priority. Please choose from high, medium, or low.")
-                except ValueError:
-                    print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
-            else:
-                print(Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option.")
-        elif choice == '4':
+        elif choice == '6':
+            keyword = input(Fore.MAGENTA + Style.BRIGHT + "Enter the keyword to search for: ").strip()
+            search_task(keyword)
+        elif choice == '7':
+            try:
+                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to prioritize: ").strip())
+                priority = input(Fore.MAGENTA + Style.BRIGHT + "Enter the priority (high, medium, low): ").strip().lower()
+                if priority in ["high", "medium", "low"]:
+                    prioritize_task(task_number, priority)
+                else:
+                    print(Fore.RED + Style.BRIGHT + "Invalid priority. Please choose from high, medium, or low.")
+            except ValueError:
+                print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
+        elif choice == '8':
             undo_last_action()
-        elif choice == '5':
-            print(Fore.CYAN + Style.BRIGHT + "Goodbye!")
+        elif choice == '9':
+            print(Fore.MAGENTA + Style.BRIGHT + "Goodbye!")
             break
         else:
             print(Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option.")
