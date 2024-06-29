@@ -91,7 +91,17 @@ def prioritize_task(task_number, priority):
         print(Fore.RED + Style.BRIGHT + "Invalid task number.")
 
 def show_menu():
-    print(Fore.MAGENTA + Style.BRIGHT + "\nCommand-Line To-Do List")
+    print(Fore.MAGENTA + Style.BRIGHT + r"""
+   ___   __   _____   _____              ___          __ _     _   
+  / __\ / /   \_   \ /__   \___         /   \___     / /(_)___| |_ 
+ / /   / /     / /\/   / /\/ _ \ _____ / /\ / _ \   / / | / __| __|
+/ /___/ /___/\/ /_    / / | (_) |_____/ /_// (_) | / /__| \__ \ |_ 
+\____/\____/\____/    \/   \___/     /___,' \___/  \____/_|___/\__|
+    """)
+    print("Command Line Interface To-Do List")
+    print("Made by 💜 from Zigao Wang.")
+    print("This project is licensed under MIT License.")
+    print("GitHub Repo: https://github.com/ZigaoWang/to-do/")
     print("--------------------------------------------------")
     print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          5.  🗑️  Clear all tasks")
     print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    6.  🔍 Search task")
