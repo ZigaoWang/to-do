@@ -5,7 +5,6 @@ from colorama import init, Fore, Style
 init(autoreset=True)
 
 TODO_FILE = 'todo.txt'
-UNDO_FILE = 'undo.txt'
 
 def load_tasks():
     if not os.path.exists(TODO_FILE):
@@ -14,23 +13,10 @@ def load_tasks():
         tasks = [line.strip() for line in file]
     return tasks
 
-def save_tasks(tasks, undo=False):
-    if not undo:
-        with open(UNDO_FILE, 'w') as undo_file:
-            for task in tasks:
-                undo_file.write(f"{task}\n")
+def save_tasks(tasks):
     with open(TODO_FILE, 'w') as file:
         for task in tasks:
             file.write(f"{task}\n")
-
-def undo_last_action():
-    if os.path.exists(UNDO_FILE):
-        with open(UNDO_FILE, 'r') as undo_file:
-            tasks = [line.strip() for line in undo_file]
-        save_tasks(tasks, undo=True)
-        print(Fore.YELLOW + Style.BRIGHT + "Last action has been undone.")
-    else:
-        print(Fore.RED + Style.BRIGHT + "No action to undo.")
 
 def add_task(task):
     tasks = load_tasks()
@@ -114,15 +100,14 @@ def show_menu():
     print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks")
     print(Fore.YELLOW + Style.BRIGHT + "6.  🔍 Search task")
     print(Fore.YELLOW + Style.BRIGHT + "7.  ⭐ Prioritize task")
-    print(Fore.YELLOW + Style.BRIGHT + "8.  🔄 Undo last action")
-    print(Fore.YELLOW + Style.BRIGHT + "9.  🚪 Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "8.  🚪 Exit")
     print("----------------------")
 
 def main():
     while True:
         view_tasks()  # Automatically display the to-do list each time
         show_menu()
-        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-9): ").strip()
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-8): ").strip()
         print("----------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
@@ -166,8 +151,6 @@ def main():
             except ValueError:
                 print(Fore.RED + Style.BRIGHT + "Please enter a valid task number.")
         elif choice == '8':
-            undo_last_action()
-        elif choice == '9':
             print(Fore.MAGENTA + Style.BRIGHT + "Goodbye!")
             break
         else:
