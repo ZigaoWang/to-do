@@ -107,64 +107,71 @@ def prioritize_task(task_number, priority):
 def show_menu():
     print(Fore.CYAN + "\nCommand-Line To-Do List")
     print("----------------------")
-    print(Fore.YELLOW + "1.  View tasks          6.  Edit task")
-    print(Fore.YELLOW + "2.  Add task            7.  Search tasks")
-    print(Fore.YELLOW + "3.  Mark task complete  8.  Prioritize task")
-    print(Fore.YELLOW + "4.  Delete task         9.  Undo last action")
-    print(Fore.YELLOW + "5.  Clear all tasks     10. Exit")
+    print(Fore.YELLOW + "1.  Add/Complete/Edit/Delete task")
+    print(Fore.YELLOW + "2.  Clear all tasks")
+    print(Fore.YELLOW + "3.  Search/Prioritize task")
+    print(Fore.YELLOW + "4.  Undo last action")
+    print(Fore.YELLOW + "5.  Exit")
     print("----------------------")
 
 def main():
     while True:
+        view_tasks()  # Automatically display the to-do list each time
         show_menu()
-        choice = input(Fore.CYAN + "Choose an option (1-10): ").strip()
+        choice = input(Fore.CYAN + "Choose an option (1-5): ").strip()
         print("----------------------")  # Divider for better readability
         if choice == '1':
-            view_tasks()
+            sub_choice = input(Fore.CYAN + "Choose: (a) Add (b) Complete (c) Edit (d) Delete: ").strip().lower()
+            if sub_choice == 'a':
+                task = input(Fore.CYAN + "Enter the task description: ").strip()
+                add_task(task)
+            elif sub_choice == 'b':
+                try:
+                    task_number = int(input(Fore.CYAN + "Enter the task number to mark as complete: ").strip())
+                    complete_task(task_number)
+                except ValueError:
+                    print(Fore.RED + "Please enter a valid task number.")
+            elif sub_choice == 'c':
+                try:
+                    task_number = int(input(Fore.CYAN + "Enter the task number to edit: ").strip())
+                    new_task = input(Fore.CYAN + "Enter the new task description: ").strip()
+                    edit_task(task_number, new_task)
+                except ValueError:
+                    print(Fore.RED + "Please enter a valid task number.")
+            elif sub_choice == 'd':
+                try:
+                    task_number = int(input(Fore.CYAN + "Enter the task number to delete: ").strip())
+                    delete_task(task_number)
+                except ValueError:
+                    print(Fore.RED + "Please enter a valid task number.")
+            else:
+                print(Fore.RED + "Invalid choice. Please choose a valid option.")
         elif choice == '2':
-            task = input(Fore.CYAN + "Enter the task description: ").strip()
-            add_task(task)
-        elif choice == '3':
-            try:
-                task_number = int(input(Fore.CYAN + "Enter the task number to mark as complete: ").strip())
-                complete_task(task_number)
-            except ValueError:
-                print(Fore.RED + "Please enter a valid task number.")
-        elif choice == '4':
-            try:
-                task_number = int(input(Fore.CYAN + "Enter the task number to delete: ").strip())
-                delete_task(task_number)
-            except ValueError:
-                print(Fore.RED + "Please enter a valid task number.")
-        elif choice == '5':
             confirm = input(Fore.CYAN + "Are you sure you want to clear all tasks? (yes/no): ").strip().lower()
             if confirm == 'yes':
                 clear_tasks()
             else:
                 print(Fore.YELLOW + "Clear all tasks canceled.")
-        elif choice == '6':
-            try:
-                task_number = int(input(Fore.CYAN + "Enter the task number to edit: ").strip())
-                new_task = input(Fore.CYAN + "Enter the new task description: ").strip()
-                edit_task(task_number, new_task)
-            except ValueError:
-                print(Fore.RED + "Please enter a valid task number.")
-        elif choice == '7':
-            keyword = input(Fore.CYAN + "Enter the keyword to search for: ").strip()
-            search_task(keyword)
-        elif choice == '8':
-            try:
-                task_number = int(input(Fore.CYAN + "Enter the task number to prioritize: ").strip())
-                priority = input(Fore.CYAN + "Enter the priority (high, medium, low): ").strip().lower()
-                if priority in ["high", "medium", "low"]:
-                    prioritize_task(task_number, priority)
-                else:
-                    print(Fore.RED + "Invalid priority. Please choose from high, medium, or low.")
-            except ValueError:
-                print(Fore.RED + "Please enter a valid task number.")
-        elif choice == '9':
+        elif choice == '3':
+            sub_choice = input(Fore.CYAN + "Choose: (a) Search (b) Prioritize: ").strip().lower()
+            if sub_choice == 'a':
+                keyword = input(Fore.CYAN + "Enter the keyword to search for: ").strip()
+                search_task(keyword)
+            elif sub_choice == 'b':
+                try:
+                    task_number = int(input(Fore.CYAN + "Enter the task number to prioritize: ").strip())
+                    priority = input(Fore.CYAN + "Enter the priority (high, medium, low): ").strip().lower()
+                    if priority in ["high", "medium", "low"]:
+                        prioritize_task(task_number, priority)
+                    else:
+                        print(Fore.RED + "Invalid priority. Please choose from high, medium, or low.")
+                except ValueError:
+                    print(Fore.RED + "Please enter a valid task number.")
+            else:
+                print(Fore.RED + "Invalid choice. Please choose a valid option.")
+        elif choice == '4':
             undo_last_action()
-        elif choice == '10':
+        elif choice == '5':
             print(Fore.CYAN + "Goodbye!")
             break
         else:
