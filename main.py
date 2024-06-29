@@ -50,6 +50,10 @@ def delete_task(task_number):
     else:
         print("Invalid task number.")
 
+def clear_tasks():
+    save_tasks([])
+    print("All tasks have been cleared.")
+
 def show_menu():
     print("\nCommand-Line To-Do List")
     print("----------------------")
@@ -57,7 +61,8 @@ def show_menu():
     print("2. Add task")
     print("3. Mark task as complete")
     print("4. Delete task")
-    print("5. Exit")
+    print("5. Clear all tasks")
+    print("6. Exit")
 
 def main():
     while True:
@@ -81,6 +86,12 @@ def main():
             except ValueError:
                 print("Please enter a valid task number.")
         elif choice == '5':
+            confirm = input("Are you sure you want to clear all tasks? (yes/no): ").strip().lower()
+            if confirm == 'yes':
+                clear_tasks()
+            else:
+                print("Clear all tasks canceled.")
+        elif choice == '6':
             print("Goodbye!")
             break
         else:
@@ -88,4 +99,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
