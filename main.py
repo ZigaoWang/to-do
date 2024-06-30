@@ -2,6 +2,10 @@ import os
 import re
 from datetime import datetime
 from colorama import init, Fore, Style
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 # Initialize colorama
 init(autoreset=True)
@@ -108,6 +112,50 @@ def sort_tasks_by_due_date():
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + "Tasks have been sorted by due date."
 
+def export_to_pdf(filename):
+    tasks = load_tasks()
+    if not tasks:
+        return Fore.RED + Style.BRIGHT + "No tasks to export."
+
+    doc = SimpleDocTemplate(filename, pagesize=letter)
+    elements = []
+
+    # Title
+    styles = getSampleStyleSheet()
+    title_style = styles["Title"]
+    title = Paragraph("To-Do List", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    # Create table data
+    data = [["#", "Status", "Priority", "Task Description", "Due Date"]]
+    for i, task in enumerate(tasks, 1):
+        parts = re.split(r'(\[.\]) (.)', task, 1)
+        status = parts[1]
+        priority = parts[2]
+        description = parts[3].strip()
+        due_date_match = re.search(r'\(Due: (.*?)\)', description)
+        due_date = due_date_match.group(1) if due_date_match else "N/A"
+        description = re.sub(r'\(Due: (.*?)\)', '', description).strip()
+        data.append([i, status, priority, description, due_date])
+
+    # Create table
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+    return Fore.GREEN + Style.BRIGHT + f"Tasks have been exported to {filename}."
+
 def show_help():
     return (
         Fore.CYAN + Style.BRIGHT + "\n--------------------------------------------------\n"
@@ -130,6 +178,7 @@ def show_help():
         "   - Tasks will be sorted in ascending order of due dates.\n"
         "9. 🚪 Exit: Exit the application.\n"
         "0. 🆘 Help: Show this help menu.\n"
+        "10. 📄 Export to PDF: Export tasks to a PDF file.\n"
         "--------------------------------------------------"
     )
 
@@ -139,6 +188,7 @@ def show_menu():
     print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        8.  📅 Sort by due date")
     print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       9.  🚪 Exit")
     print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks  0.  🆘 Help")
+    print(Fore.YELLOW + Style.BRIGHT + "10. 📄 Export to PDF")
     print("--------------------------------------------------")
 
 def main():
@@ -170,7 +220,7 @@ def main():
         if help_message:
             print(help_message)
             help_message = ""
-        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-9): ").strip()
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-10): ").strip()
         print("--------------------------------------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
@@ -227,6 +277,9 @@ def main():
             break
         elif choice == '0':
             help_message = show_help()
+        elif choice == '10':  # Add a new option for exporting to PDF
+            filename = input(Fore.MAGENTA + Style.BRIGHT + "Enter the filename for the PDF (e.g., tasks.pdf, include the .pdf): ").strip()
+            last_message = export_to_pdf(filename)
         else:
             last_message = Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option."
         print("--------------------------------------------------")  # Divider for better readability
