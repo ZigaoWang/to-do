@@ -108,17 +108,43 @@ def sort_tasks_by_due_date():
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + "Tasks have been sorted by due date."
 
+def show_help():
+    return (
+        Fore.CYAN + Style.BRIGHT + "\n--------------------------------------------------\n"
+        "Help Menu:\n"
+        "1. ➕ Add task: Add a new task to your to-do list. You can also set a due date.\n"
+        "   - Follow the prompts to enter the task description and optional due date.\n"
+        "2. ✔️ Complete task: Mark an existing task as complete.\n"
+        "   - Enter the task number to mark it as complete.\n"
+        "3. ✏️ Edit task: Edit the description of an existing task.\n"
+        "   - Enter the task number and the new description.\n"
+        "4. ❌ Delete task: Delete an existing task from your to-do list.\n"
+        "   - Enter the task number to delete it.\n"
+        "5. 🗑️ Clear all tasks: Clear all tasks from your to-do list.\n"
+        "   - Confirm the action to clear all tasks.\n"
+        "6. 🔍 Search task: Search for tasks containing a specific keyword.\n"
+        "   - Enter the keyword to search for.\n"
+        "7. ⭐ Prioritize task: Set the priority of an existing task (high, medium, low).\n"
+        "   - Enter the task number and the priority level.\n"
+        "8. 📅 Sort by due date: Sort all tasks by their due dates.\n"
+        "   - Tasks will be sorted in ascending order of due dates.\n"
+        "9. 🚪 Exit: Exit the application.\n"
+        "0. 🆘 Help: Show this help menu.\n"
+        "--------------------------------------------------"
+    )
+
 def show_menu():
     print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          6.  🔍 Search task")
     print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    7.  ⭐ Prioritize task")
     print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        8.  📅 Sort by due date")
     print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       9.  🚪 Exit")
-    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks")
+    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks  0.  🆘 Help")
     print("--------------------------------------------------")
 
 def main():
     first_run = True
     last_message = ""
+    help_message = ""
     while True:
         if first_run:
             print(Fore.MAGENTA + Style.BRIGHT + r"""
@@ -141,7 +167,10 @@ def main():
         if last_message:
             print(last_message)
             last_message = ""
-        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (1-9): ").strip()
+        if help_message:
+            print(help_message)
+            help_message = ""
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-9): ").strip()
         print("--------------------------------------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
@@ -196,6 +225,8 @@ def main():
         elif choice == '9':
             print(Fore.MAGENTA + Style.BRIGHT + "Goodbye!")
             break
+        elif choice == '0':
+            help_message = show_help()
         else:
             last_message = Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option."
         print("--------------------------------------------------")  # Divider for better readability
