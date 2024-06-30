@@ -30,10 +30,11 @@ def save_tasks(tasks):
         for task in tasks:
             file.write(f"{task}\n")
 
-def add_task(task, due_date=None):
+def add_task(task, due_date=None, category=None):
     tasks = load_tasks()
     due_date_str = f" (Due: {due_date})" if due_date else ""
-    tasks.append(f"[ ] {PRIORITY_MAP['medium']} {task}{due_date_str}")
+    category_str = f" [Category: {category}]" if category else ""
+    tasks.append(f"[ ] {PRIORITY_MAP['medium']} {task}{due_date_str}{category_str}")
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + f"Added task: '{task}'"
 
@@ -112,6 +113,13 @@ def sort_tasks_by_due_date():
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + "Tasks have been sorted by due date."
 
+def sort_tasks_by_priority():
+    priority_order = {'high': 1, 'medium': 2, 'low': 3}
+    tasks = load_tasks()
+    tasks.sort(key=lambda x: priority_order.get(re.search(r'🔷|🔶|🔥', x).group(0), 4) if re.search(r'🔷|🔶|🔥', x) else 4)
+    save_tasks(tasks)
+    return Fore.GREEN + Style.BRIGHT + "Tasks have been sorted by priority."
+
 def export_to_pdf(filename):
     tasks = load_tasks()
     if not tasks:
@@ -128,7 +136,7 @@ def export_to_pdf(filename):
     elements.append(Spacer(1, 12))
 
     # Create table data
-    data = [["#", "Status", "Priority", "Task Description", "Due Date"]]
+    data = [["#", "Status", "Priority", "Task Description", "Due Date", "Category"]]
     for i, task in enumerate(tasks, 1):
         parts = re.split(r'(\[.\]) (.)', task, 1)
         status = parts[1]
@@ -136,8 +144,11 @@ def export_to_pdf(filename):
         description = parts[3].strip()
         due_date_match = re.search(r'\(Due: (.*?)\)', description)
         due_date = due_date_match.group(1) if due_date_match else "N/A"
+        category_match = re.search(r'\[Category: (.*?)\]', description)
+        category = category_match.group(1) if category_match else "N/A"
         description = re.sub(r'\(Due: (.*?)\)', '', description).strip()
-        data.append([i, status, priority, description, due_date])
+        description = re.sub(r'\[Category: (.*?)\]', '', description).strip()
+        data.append([i, status, priority, description, due_date, category])
 
     # Create table
     table = Table(data)
@@ -160,8 +171,8 @@ def show_help():
     return (
         Fore.CYAN + Style.BRIGHT + "\n--------------------------------------------------\n"
         "Help Menu:\n"
-        "1. ➕ Add task: Add a new task to your to-do list. You can also set a due date.\n"
-        "   - Follow the prompts to enter the task description and optional due date.\n"
+        "1. ➕ Add task: Add a new task to your to-do list. You can also set a due date and category.\n"
+        "   - Follow the prompts to enter the task description, optional due date, and category.\n"
         "2. ✔️ Complete task: Mark an existing task as complete.\n"
         "   - Enter the task number to mark it as complete.\n"
         "3. ✏️ Edit task: Edit the description of an existing task.\n"
@@ -179,6 +190,7 @@ def show_help():
         "9. 🚪 Exit: Exit the application.\n"
         "0. 🆘 Help: Show this help menu.\n"
         "10. 📄 Export to PDF: Export tasks to a PDF file.\n"
+        "11. 📋 Sort by priority: Sort all tasks by their priority levels.\n"
         "--------------------------------------------------"
     )
 
@@ -188,7 +200,7 @@ def show_menu():
     print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        8.  📅 Sort by due date")
     print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       9.  🚪 Exit")
     print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks  0.  🆘 Help")
-    print(Fore.YELLOW + Style.BRIGHT + "10. 📄 Export to PDF")
+    print(Fore.YELLOW + Style.BRIGHT + "10. 📄 Export to PDF     11. 📋 Sort by priority")
     print("--------------------------------------------------")
 
 def main():
@@ -220,18 +232,19 @@ def main():
         if help_message:
             print(help_message)
             help_message = ""
-        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-10): ").strip()
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-11): ").strip()
         print("--------------------------------------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
             due_date = input(Fore.MAGENTA + Style.BRIGHT + "Enter the due date (YYYY-MM-DD) or leave blank: ").strip()
+            category = input(Fore.MAGENTA + Style.BRIGHT + "Enter the category or leave blank: ").strip()
             if due_date:
                 try:
                     datetime.strptime(due_date, "%Y-%m-%d")
                 except ValueError:
                     last_message = Fore.RED + Style.BRIGHT + "Invalid date format. Task not added."
                     continue
-            last_message = add_task(task, due_date)
+            last_message = add_task(task, due_date, category)
         elif choice == '2':
             try:
                 task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to mark as complete: ").strip())
@@ -280,6 +293,8 @@ def main():
         elif choice == '10':  # Add a new option for exporting to PDF
             filename = input(Fore.MAGENTA + Style.BRIGHT + "Enter the filename for the PDF (e.g., tasks.pdf, include the .pdf): ").strip()
             last_message = export_to_pdf(filename)
+        elif choice == '11':  # Add a new option for sorting by priority
+            last_message = sort_tasks_by_priority()
         else:
             last_message = Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option."
         print("--------------------------------------------------")  # Divider for better readability
