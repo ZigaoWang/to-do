@@ -11,7 +11,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 init(autoreset=True)
 
 TODO_FILE = 'todo.txt'
-SETTINGS_FILE = 'settings.txt'
 
 PRIORITY_MAP = {
     "high": "🔥",
@@ -33,25 +32,8 @@ def save_tasks(tasks):
         for task in tasks:
             file.write(f"{task}\n")
 
-def load_settings():
-    if not os.path.exists(SETTINGS_FILE):
-        return {"default_priority": "medium"}
-    with open(SETTINGS_FILE, 'r') as file:
-        settings = {}
-        for line in file:
-            key, value = line.strip().split('=')
-            settings[key] = value
-    return settings
-
-def save_settings(settings):
-    with open(SETTINGS_FILE, 'w') as file:
-        for key, value in settings.items():
-            file.write(f"{key}={value}\n")
-
 def add_task(task, due_date=None, category=None, priority=None):
-    settings = load_settings()
-    default_priority = settings.get("default_priority", "medium")
-    priority = priority or default_priority
+    priority = priority or DEFAULT_PRIORITY
     tasks = load_tasks()
     due_date_str = f" (Due: {due_date})" if due_date else ""
     category_str = f" [Category: {category}]" if category else ""
@@ -137,29 +119,13 @@ def sort_tasks_by_due_date():
 def sort_tasks_by_priority():
     priority_order = {'high': 1, 'medium': 2, 'low': 3}
     tasks = load_tasks()
-    tasks.sort(key=lambda x: priority_order.get(re.search(r'🔷|🔶|🔥', x).group(0), 4) if re.search(r'🔷|🔶|🔥', x) else 4)
+    tasks.sort(
+        key=lambda x: priority_order.get(
+            re.search(r'🔷|🔶|🔥', x).group(0), 4
+        ) if re.search(r'🔷|🔶|🔥', x) else 4
+    )
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + "Tasks have been sorted by priority."
-
-def add_subtask(task_number, subtask):
-    tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        tasks[task_number - 1] += f"\n    - {subtask}"
-        save_tasks(tasks)
-        return Fore.GREEN + Style.BRIGHT + f"Subtask added to task {task_number}."
-    else:
-        return Fore.RED + Style.BRIGHT + "Invalid task number."
-
-def set_reminder(task_number, reminder_date):
-    tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        task = tasks[task_number - 1]
-        reminder_str = f" [Reminder: {reminder_date}]"
-        tasks[task_number - 1] = task + reminder_str
-        save_tasks(tasks)
-        return Fore.GREEN + Style.BRIGHT + f"Reminder set for task {task_number}."
-    else:
-        return Fore.RED + Style.BRIGHT + "Invalid task number."
 
 def export_to_pdf(filename):
     tasks = load_tasks()
@@ -177,9 +143,11 @@ def export_to_pdf(filename):
     elements.append(Spacer(1, 12))
 
     # Create table data
-    data = [["#", "Status", "Priority", "Task Description", "Due Date", "Category", "Reminder"]]
+    data = [["#", "Status", "Priority", "Task Description", "Due Date", "Category"]]
     for i, task in enumerate(tasks, 1):
         parts = re.split(r'(\[.\]) (.)', task, 1)
+        if len(parts) < 4:
+            continue
         status = parts[1]
         priority = parts[2]
         description = parts[3].strip()
@@ -187,12 +155,9 @@ def export_to_pdf(filename):
         due_date = due_date_match.group(1) if due_date_match else "N/A"
         category_match = re.search(r'\[Category: (.*?)\]', description)
         category = category_match.group(1) if category_match else "N/A"
-        reminder_match = re.search(r'\[Reminder: (.*?)\]', description)
-        reminder = reminder_match.group(1) if reminder_match else "N/A"
         description = re.sub(r'\(Due: (.*?)\)', '', description).strip()
         description = re.sub(r'\[Category: (.*?)\]', '', description).strip()
-        description = re.sub(r'\[Reminder: (.*?)\]', '', description).strip()
-        data.append([i, status, priority, description, due_date, category, reminder])
+        data.append([i, status, priority, description, due_date, category])
 
     # Create table
     table = Table(data)
@@ -233,26 +198,20 @@ def show_help():
         "   - Tasks will be sorted in ascending order of due dates.\n"
         "9. 📋 Sort by priority: Sort all tasks by their priority levels.\n"
         "   - Tasks will be sorted in ascending order of priority.\n"
-        "10. ➕ Add subtask: Add a subtask to an existing task.\n"
-        "    - Enter the task number and the subtask description.\n"
-        "11. ⏰ Set reminder: Set a reminder for a task.\n"
-        "    - Enter the task number and the reminder date (YYYY-MM-DD).\n"
-        "12. 📄 Export to PDF: Export tasks to a PDF file.\n"
+        "10. 📄 Export to PDF: Export tasks to a PDF file.\n"
         "    - Enter the filename for the PDF (e.g., tasks.pdf).\n"
-        "13. ⚙️ Settings: Customize your settings (default priority).\n"
-        "14. 🚪 Exit: Exit the application.\n"
+        "11. 🚪 Exit: Exit the application.\n"
         "0. 🆘 Help: Show this help menu.\n"
         "--------------------------------------------------"
     )
 
 def show_menu():
-    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          8.  📅 Sort by due date")
-    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    9.  📋 Sort by priority")
-    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task       10. ➕ Add subtask")
-    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task      11. ⏰ Set reminder")
-    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks 12. 📄 Export to PDF")
-    print(Fore.YELLOW + Style.BRIGHT + "6.  🔍 Search task      13. ⚙️ Settings")
-    print(Fore.YELLOW + Style.BRIGHT + "7.  ⭐ Prioritize task   14. 🚪 Exit")
+    print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          6.  🔍 Search task")
+    print(Fore.YELLOW + Style.BRIGHT + "2.  ✔️  Complete task    7.  ⭐ Prioritize task")
+    print(Fore.YELLOW + Style.BRIGHT + "3.  ✏️  Edit task        8.  📅 Sort by due date")
+    print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       9.  📋 Sort by priority")
+    print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks 10. 📄 Export to PDF")
+    print(Fore.YELLOW + Style.BRIGHT + "11. 🚪 Exit")
     print(Fore.YELLOW + Style.BRIGHT + "0.  🆘 Help")
     print("--------------------------------------------------")
 
@@ -285,7 +244,7 @@ def main():
         if help_message:
             print(help_message)
             help_message = ""
-        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-14): ").strip()
+        choice = input(Fore.MAGENTA + Style.BRIGHT + "Choose an option (0-11): ").strip()
         print("--------------------------------------------------")  # Divider for better readability
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
@@ -345,43 +304,9 @@ def main():
         elif choice == '9':
             last_message = sort_tasks_by_priority()
         elif choice == '10':
-            try:
-                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to add a subtask: ").strip())
-                subtask = input(Fore.MAGENTA + Style.BRIGHT + "Enter the subtask description: ").strip()
-                last_message = add_subtask(task_number, subtask)
-            except ValueError:
-                last_message = Fore.RED + Style.BRIGHT + "Please enter a valid task number."
-        elif choice == '11':
-            try:
-                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to set a reminder: ").strip())
-                reminder_date = input(Fore.MAGENTA + Style.BRIGHT + "Enter the reminder date (YYYY-MM-DD): ").strip()
-                try:
-                    datetime.strptime(reminder_date, "%Y-%m-%d")
-                    last_message = set_reminder(task_number, reminder_date)
-                except ValueError:
-                    last_message = Fore.RED + Style.BRIGHT + "Invalid date format. Reminder not set."
-            except ValueError:
-                last_message = Fore.RED + Style.BRIGHT + "Please enter a valid task number."
-        elif choice == '12':
             filename = input(Fore.MAGENTA + Style.BRIGHT + "Enter the filename for the PDF (e.g., tasks.pdf, include the .pdf): ").strip()
             last_message = export_to_pdf(filename)
-        elif choice == '13':
-            settings = load_settings()
-            print(Fore.MAGENTA + Style.BRIGHT + "\nCurrent Settings:")
-            for key, value in settings.items():
-                print(f"{key}: {value}")
-            setting_to_change = input(Fore.MAGENTA + Style.BRIGHT + "Enter the setting you want to change (default_priority): ").strip()
-            if setting_to_change in settings:
-                new_value = input(Fore.MAGENTA + Style.BRIGHT + f"Enter the new value for {setting_to_change}: ").strip()
-                if setting_to_change == "default_priority" and new_value not in ["high", "medium", "low"]:
-                    last_message = Fore.RED + Style.BRIGHT + "Invalid priority. Setting not changed."
-                else:
-                    settings[setting_to_change] = new_value
-                    save_settings(settings)
-                    last_message = Fore.GREEN + Style.BRIGHT + f"Setting '{setting_to_change}' updated to '{new_value}'."
-            else:
-                last_message = Fore.RED + Style.BRIGHT + "Invalid setting."
-        elif choice == '14':
+        elif choice == '11':
             print(Fore.MAGENTA + Style.BRIGHT + "Goodbye!")
             break
         elif choice == '0':
