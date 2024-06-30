@@ -5,6 +5,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+import click
 
 # Initialize colorama
 init(autoreset=True)
@@ -19,7 +20,6 @@ PRIORITY_MAP = {
 
 DEFAULT_PRIORITY = "medium"
 
-
 def load_tasks():
     if not os.path.exists(TODO_FILE):
         return []
@@ -27,12 +27,10 @@ def load_tasks():
         tasks = [line.strip() for line in file]
     return tasks
 
-
 def save_tasks(tasks):
     with open(TODO_FILE, 'w') as file:
         for task in tasks:
             file.write(f"{task}\n")
-
 
 def add_task(task, category=None, priority=None):
     priority = priority or DEFAULT_PRIORITY
@@ -42,7 +40,6 @@ def add_task(task, category=None, priority=None):
     save_tasks(tasks)
     return Fore.GREEN + Style.BRIGHT + f"Added task: '{task}'"
 
-
 def view_tasks():
     tasks = load_tasks()
     if not tasks:
@@ -50,25 +47,26 @@ def view_tasks():
 
     # Sort tasks by priority
     priority_order = {'🔥': 1, '🔶': 2, '🔷': 3}
-    tasks.sort(
-        key=lambda x: priority_order.get(
-            re.search(r'🔷|🔶|🔥', x).group(0), 4
-        ) if re.search(r'🔷|🔶|🔥', x) else 4
+    sorted_tasks = sorted(
+        tasks,
+        key=lambda x: priority_order.get(re.search(r'🔷|🔶|🔥', x).group(0), 4) if re.search(r'🔷|🔶|🔥', x) else 4
     )
 
     output = [Fore.MAGENTA + Style.BRIGHT + "\nYour To-Do List:"]
-    for i, task in enumerate(tasks, 1):
+    for i, task in enumerate(sorted_tasks, 1):
         output.append(f"{i}. {task}")
     output.append("")
-    return "\n".join(output)
-
+    click.echo("\n".join(output))  # Use click.echo instead of print
+    return sorted_tasks
 
 def complete_task(task_number):
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        task = tasks[task_number - 1]
+    sorted_tasks = view_tasks()
+    if 0 < task_number <= len(sorted_tasks):
+        task = sorted_tasks[task_number - 1]
+        index = tasks.index(task)
         if task.startswith("[ ]"):
-            tasks[task_number - 1] = task.replace("[ ]", "[x]", 1)
+            tasks[index] = task.replace("[ ]", "[x]", 1)
             save_tasks(tasks)
             return Fore.GREEN + Style.BRIGHT + f"Task {task_number} marked as complete."
         else:
@@ -76,32 +74,33 @@ def complete_task(task_number):
     else:
         return Fore.RED + Style.BRIGHT + "Invalid task number."
 
-
 def delete_task(task_number):
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        removed_task = tasks.pop(task_number - 1)
+    sorted_tasks = view_tasks()
+    if 0 < task_number <= len(sorted_tasks):
+        task = sorted_tasks[task_number - 1]
+        tasks.remove(task)
         save_tasks(tasks)
-        return Fore.GREEN + Style.BRIGHT + f"Deleted task: '{removed_task}'"
+        return Fore.GREEN + Style.BRIGHT + f"Deleted task: '{task}'"
     else:
         return Fore.RED + Style.BRIGHT + "Invalid task number."
-
 
 def clear_tasks():
     save_tasks([])
     return Fore.GREEN + Style.BRIGHT + "All tasks have been cleared."
 
-
 def edit_task(task_number, new_task):
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        parts = re.split(r'(\[.\]) (.)', tasks[task_number - 1], 1)
-        tasks[task_number - 1] = f"{parts[1]} {parts[2]} {new_task}"
+    sorted_tasks = view_tasks()
+    if 0 < task_number <= len(sorted_tasks):
+        task = sorted_tasks[task_number - 1]
+        index = tasks.index(task)
+        parts = re.split(r'(\[.\]) (.)', task, 1)
+        tasks[index] = f"{parts[1]} {parts[2]} {new_task}"
         save_tasks(tasks)
         return Fore.GREEN + Style.BRIGHT + f"Task {task_number} has been updated to: '{new_task}'"
     else:
         return Fore.RED + Style.BRIGHT + "Invalid task number."
-
 
 def search_task(keyword):
     tasks = load_tasks()
@@ -115,18 +114,18 @@ def search_task(keyword):
     else:
         return Fore.RED + Style.BRIGHT + f"No tasks found containing '{keyword}'."
 
-
 def prioritize_task(task_number, priority):
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        task = tasks[task_number - 1]
+    sorted_tasks = view_tasks()
+    if 0 < task_number <= len(sorted_tasks):
+        task = sorted_tasks[task_number - 1]
+        index = tasks.index(task)
         parts = re.split(r'(\[.\]) (.)', task, 1)
-        tasks[task_number - 1] = f"{parts[1]} {PRIORITY_MAP[priority]} {parts[3].strip()}"
+        tasks[index] = f"{parts[1]} {PRIORITY_MAP[priority]} {parts[3].strip()}"
         save_tasks(tasks)
         return Fore.GREEN + Style.BRIGHT + f"Task {task_number} has been prioritized as {priority}."
     else:
         return Fore.RED + Style.BRIGHT + "Invalid task number."
-
 
 def export_to_pdf(filename):
     tasks = load_tasks()
@@ -174,32 +173,30 @@ def export_to_pdf(filename):
     doc.build(elements)
     return Fore.GREEN + Style.BRIGHT + f"Tasks have been exported to {filename}."
 
-
 def show_help():
     return (
-            Fore.CYAN + Style.BRIGHT + "\n--------------------------------------------------\n"
-                                       "Help Menu:\n"
-                                       "1. ➕ Add task: Add a new task to your to-do list. You can also set a category.\n"
-                                       "   - Follow the prompts to enter the task description and optional category.\n"
-                                       "2. ✔️ Complete task: Mark an existing task as complete.\n"
-                                       "   - Enter the task number to mark it as complete.\n"
-                                       "3. ✏️ Edit task: Edit the description of an existing task.\n"
-                                       "   - Enter the task number and the new description.\n"
-                                       "4. ❌ Delete task: Delete an existing task from your to-do list.\n"
-                                       "   - Enter the task number to delete it.\n"
-                                       "5. 🗑️ Clear all tasks: Clear all tasks from your to-do list.\n"
-                                       "   - Confirm the action to clear all tasks.\n"
-                                       "6. 🔍 Search task: Search for tasks containing a specific keyword.\n"
-                                       "   - Enter the keyword to search for.\n"
-                                       "7. ⭐ Prioritize task: Set the priority of an existing task (high, medium, low).\n"
-                                       "   - Enter the task number and the priority level.\n"
-                                       "10. 📄 Export to PDF: Export tasks to a PDF file.\n"
-                                       "   - Enter the filename for the PDF (e.g., tasks.pdf).\n"
-                                       "11. 🚪 Exit: Exit the application.\n"
-                                       "0. 🆘 Help: Show this help menu.\n"
-                                       "--------------------------------------------------"
+        Fore.CYAN + Style.BRIGHT + "\n--------------------------------------------------\n"
+        "Help Menu:\n"
+        "1. ➕ Add task: Add a new task to your to-do list. You can also set a category.\n"
+        "   - Follow the prompts to enter the task description and optional category.\n"
+        "2. ✔️ Complete task: Mark an existing task as complete.\n"
+        "   - Enter the task number to mark it as complete.\n"
+        "3. ✏️ Edit task: Edit the description of an existing task.\n"
+        "   - Enter the task number and the new description.\n"
+        "4. ❌ Delete task: Delete an existing task from your to-do list.\n"
+        "   - Enter the task number to delete it.\n"
+        "5. 🗑️ Clear all tasks: Clear all tasks from your to-do list.\n"
+        "   - Confirm the action to clear all tasks.\n"
+        "6. 🔍 Search task: Search for tasks containing a specific keyword.\n"
+        "   - Enter the keyword to search for.\n"
+        "7. ⭐ Prioritize task: Set the priority of an existing task (high, medium, low).\n"
+        "   - Enter the task number and the priority level.\n"
+        "10. 📄 Export to PDF: Export tasks to a PDF file.\n"
+        "   - Enter the filename for the PDF (e.g., tasks.pdf).\n"
+        "11. 🚪 Exit: Exit the application.\n"
+        "0. 🆘 Help: Show this help menu.\n"
+        "--------------------------------------------------"
     )
-
 
 def show_menu():
     print(Fore.YELLOW + Style.BRIGHT + "1.  ➕ Add task          6.  🔍 Search task")
@@ -208,7 +205,6 @@ def show_menu():
     print(Fore.YELLOW + Style.BRIGHT + "4.  ❌ Delete task       11. 🚪 Exit")
     print(Fore.YELLOW + Style.BRIGHT + "5.  🗑️  Clear all tasks  0.  🆘 Help")
     print("--------------------------------------------------")
-
 
 def main():
     first_run = True
@@ -231,8 +227,6 @@ def main():
             first_run = False
         show_menu()
         tasks_output = view_tasks()  # Automatically display the to-do list each time
-        if tasks_output:
-            print(tasks_output)
         if last_message:
             print(last_message)
             last_message = ""
@@ -244,16 +238,14 @@ def main():
         if choice == '1':
             task = input(Fore.MAGENTA + Style.BRIGHT + "Enter the task description: ").strip()
             category = input(Fore.MAGENTA + Style.BRIGHT + "Enter the category or leave blank: ").strip()
-            priority = input(
-                Fore.MAGENTA + Style.BRIGHT + "Enter the priority (high, medium, low) or leave blank for default: ").strip().lower()
+            priority = input(Fore.MAGENTA + Style.BRIGHT + "Enter the priority (high, medium, low) or leave blank for default: ").strip().lower()
             if priority and priority not in ["high", "medium", "low"]:
                 last_message = Fore.RED + Style.BRIGHT + "Invalid priority. Task not added."
                 continue
             last_message = add_task(task, category, priority)
         elif choice == '2':
             try:
-                task_number = int(
-                    input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to mark as complete: ").strip())
+                task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to mark as complete: ").strip())
                 last_message = complete_task(task_number)
             except ValueError:
                 last_message = Fore.RED + Style.BRIGHT + "Please enter a valid task number."
@@ -271,8 +263,7 @@ def main():
             except ValueError:
                 last_message = Fore.RED + Style.BRIGHT + "Please enter a valid task number."
         elif choice == '5':
-            confirm = input(
-                Fore.MAGENTA + Style.BRIGHT + "Are you sure you want to clear all tasks? (yes/no): ").strip().lower()
+            confirm = input(Fore.MAGENTA + Style.BRIGHT + "Are you sure you want to clear all tasks? (yes/no): ").strip().lower()
             if confirm == 'yes':
                 last_message = clear_tasks()
             else:
@@ -283,8 +274,7 @@ def main():
         elif choice == '7':
             try:
                 task_number = int(input(Fore.MAGENTA + Style.BRIGHT + "Enter the task number to prioritize: ").strip())
-                priority = input(
-                    Fore.MAGENTA + Style.BRIGHT + "Enter the priority (high, medium, low): ").strip().lower()
+                priority = input(Fore.MAGENTA + Style.BRIGHT + "Enter the priority (high, medium, low): ").strip().lower()
                 if priority in ["high", "medium", "low"]:
                     last_message = prioritize_task(task_number, priority)
                 else:
@@ -292,8 +282,7 @@ def main():
             except ValueError:
                 last_message = Fore.RED + Style.BRIGHT + "Please enter a valid task number."
         elif choice == '10':
-            filename = input(
-                Fore.MAGENTA + Style.BRIGHT + "Enter the filename for the PDF (e.g., tasks.pdf, include the .pdf): ").strip()
+            filename = input(Fore.MAGENTA + Style.BRIGHT + "Enter the filename for the PDF (e.g., tasks.pdf, include the .pdf): ").strip()
             last_message = export_to_pdf(filename)
         elif choice == '11':
             print(Fore.MAGENTA + Style.BRIGHT + "Goodbye!")
@@ -303,7 +292,6 @@ def main():
         else:
             last_message = Fore.RED + Style.BRIGHT + "Invalid choice. Please choose a valid option."
         print("--------------------------------------------------")  # Divider for better readability
-
 
 if __name__ == "__main__":
     main()

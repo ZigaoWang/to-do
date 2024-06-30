@@ -34,6 +34,16 @@ def save_tasks(tasks):
         for task in tasks:
             file.write(f"{task}\n")
 
+def sort_tasks(tasks):
+    """Sort tasks by priority."""
+    priority_order = {'🔥': 1, '🔶': 2, '🔷': 3}
+    tasks.sort(
+        key=lambda x: priority_order.get(
+            re.search(r'🔷|🔶|🔥', x).group(0), 4
+        ) if re.search(r'🔷|🔶|🔥', x) else 4
+    )
+    return tasks
+
 @click.group()
 def cli():
     """A simple CLI to-do list application."""
@@ -62,29 +72,30 @@ def view():
         click.echo(Fore.RED + Style.BRIGHT + "No tasks found.")
         return
 
-    # Sort tasks by priority
-    priority_order = {'🔥': 1, '🔶': 2, '🔷': 3}
-    tasks.sort(
-        key=lambda x: priority_order.get(
-            re.search(r'🔷|🔶|🔥', x).group(0), 4
-        ) if re.search(r'🔷|🔶|🔥', x) else 4
-    )
-
+    tasks = sort_tasks(tasks)
     output = [Fore.MAGENTA + Style.BRIGHT + "\nYour To-Do List:"]
+
+    task_map = {}
     for i, task in enumerate(tasks, 1):
         output.append(f"{i}. {task}")
+        task_map[i] = task
+
     output.append("")
     click.echo("\n".join(output))
+    return task_map
 
 @cli.command()
 @click.argument('task_number', type=int)
 def complete(task_number):
     """Mark a task as complete."""
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        task = tasks[task_number - 1]
-        if task.startswith("[ ]"):
-            tasks[task_number - 1] = task.replace("[ ]", "[x]", 1)
+    task_map = view()
+
+    if task_number in task_map:
+        task = task_map[task_number]
+        index = tasks.index(task)
+        if tasks[index].startswith("[ ]"):
+            tasks[index] = tasks[index].replace("[ ]", "[x]", 1)
             save_tasks(tasks)
             click.echo(Fore.GREEN + Style.BRIGHT + f"Task {task_number} marked as complete.")
         else:
@@ -97,10 +108,13 @@ def complete(task_number):
 def delete(task_number):
     """Delete a task."""
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        removed_task = tasks.pop(task_number - 1)
+    task_map = view()
+
+    if task_number in task_map:
+        task = task_map[task_number]
+        tasks.remove(task)
         save_tasks(tasks)
-        click.echo(Fore.GREEN + Style.BRIGHT + f"Deleted task: '{removed_task}'")
+        click.echo(Fore.GREEN + Style.BRIGHT + f"Deleted task: '{task}'")
     else:
         click.echo(Fore.RED + Style.BRIGHT + "Invalid task number.")
 
@@ -118,9 +132,13 @@ def clear():
 def edit(task_number, new_task):
     """Edit a task."""
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        parts = re.split(r'(\[.\]) (.)', tasks[task_number - 1], 1)
-        tasks[task_number - 1] = f"{parts[1]} {parts[2]} {new_task}"
+    task_map = view()
+
+    if task_number in task_map:
+        task = task_map[task_number]
+        index = tasks.index(task)
+        parts = re.split(r'(\[.\]) (.)', tasks[index], 1)
+        tasks[index] = f"{parts[1]} {parts[2]} {new_task}"
         save_tasks(tasks)
         click.echo(Fore.GREEN + Style.BRIGHT + f"Task {task_number} has been updated to: '{new_task}'")
     else:
@@ -150,10 +168,13 @@ def prioritize(task_number, priority):
         click.echo(Fore.RED + Style.BRIGHT + "Invalid priority.")
         return
     tasks = load_tasks()
-    if 0 < task_number <= len(tasks):
-        task = tasks[task_number - 1]
-        parts = re.split(r'(\[.\]) (.)', task, 1)
-        tasks[task_number - 1] = f"{parts[1]} {PRIORITY_MAP[priority]} {parts[3].strip()}"
+    task_map = view()
+
+    if task_number in task_map:
+        task = task_map[task_number]
+        index = tasks.index(task)
+        parts = re.split(r'(\[.\]) (.)', tasks[index], 1)
+        tasks[index] = f"{parts[1]} {PRIORITY_MAP[priority]} {parts[3].strip()}"
         save_tasks(tasks)
         click.echo(Fore.GREEN + Style.BRIGHT + f"Task {task_number} has been prioritized as {priority}.")
     else:
